@@ -13,6 +13,7 @@ public class Application {
 		String botToken = context.getEnvironment().getProperty("bot.token");
 
 		TelegramBot bot = new TelegramBot(botToken, botUsername);
+
 		bot.run();
 		bot.runScheduler();
 	}

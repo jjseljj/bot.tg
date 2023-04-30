@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserCredentialsRepository extends JpaRepository<UserCredentials, Long> {
     UserCredentials findByPhoneNumber(String phoneNumber);
-    UserCredentials findByFirstName(String firstName);
-    UserCredentials findByLastName(String lastName);
-
-    UserCredentials findByUsername(String username);
+    //UserCredentials findByUsername(String username);
+    //UserCredentials findByLastName(String lastName);
 }

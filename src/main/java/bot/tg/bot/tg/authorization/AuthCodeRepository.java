@@ -9,9 +9,14 @@ import org.springframework.stereotype.Repository;
 // и номеру телефона пользователя.
 @Repository
 public interface AuthCodeRepository extends JpaRepository<AuthCode, Long> {
-    AuthCode findByCodeAndUserCredentialsPhoneNumber(String code, String phoneNumber);
-    AuthCode findTopByUserCredentialsOrderByCreatedAtDesc(UserCredentials userCredentials);
 
-    AuthCode save(AuthCode authCode);
+    //определяет запрос для поиска записи с типом AuthCode,
+    // у которой связанная сущность UserCredentials имеет значение равное переданному параметру userCredentials,
+    // и сортирует результаты по убыванию значения поля id.
+    AuthCode findTopByUserCredentialsOrderByIdDesc(UserCredentials userCredentials);
+
+
+    AuthCode findByAuthCodeAndUserCredentialsPhoneNumber(String code, String phoneNumber);
+
 }
 

@@ -1,10 +1,10 @@
 package bot.tg.bot.tg;
 
-import bot.tg.bot.tg.authorization.AuthCode;
-import bot.tg.bot.tg.authorization.UserRegistrationImpl;
+import bot.tg.bot.tg.authorization.UserRegistrationRepository;
 import org.json.JSONObject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,20 +18,25 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.Properties;
 public class TelegramBot extends TelegramLongPollingBot {
     private String botToken;
     private String botUsername;
-    public TelegramBot(String botToken, String botUsername) {
+    private UserRegistrationRepository userRegistrationRepository;
+    private GenerateAuthLink generateAuthLink;
+    public TelegramBot(String botToken, String botUsername, UserRegistrationRepository userRegistrationRepository, GenerateAuthLink generateAuthLink) {
+        System.out.println("Bot token: " + botToken);
+        System.out.println("Bot username: " + botUsername);
         this.botToken = botToken;
         this.botUsername = botUsername;
+        this.userRegistrationRepository = userRegistrationRepository;
+        this.generateAuthLink = generateAuthLink;
     }
+
+
+    public TelegramBot(String botToken, String botUsername) {
+        // в теле конструктора производите инициализацию объекта TelegramBot, используя переданные параметры
+    }
+
     public TelegramBot() {
         this.botToken = " ";
         this.botUsername = " ";
@@ -53,90 +58,25 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     // Метод для отправки ссылки для авторизации пользователю
     private void sendAuthLink(Long chatId) {
-        String authLink = generateAuthLink(); // Генерируем ссылку для авторизации
-        SendMessage message = new SendMessage(); // Создаем сообщение
-        message.setChatId(chatId.toString()); // Устанавливаем ID чата, в котором нужно отправить сообщение
-        message.setText("Пройдите по ссылке для авторизации: " + authLink); // Устанавливаем текст сообщения
+        String authLink = generateAuthLink.generateAuthLink("    ");
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId.toString());
+        message.setText("Пройдите по ссылке для авторизации: " + authLink);
 
         try {
-            execute(message); // Отправляем сообщение
+            execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
+/*
 
-    private void loadConfig() {
-        Properties prop = new Properties();
-        InputStream input = null;
+    @Autowired // инъектируем репозиторий
+    private UserRegistrationRepository userRegistrationRepository;
 
-        try {
-            input = new FileInputStream("config.properties");
-            prop.load(input);
-
-            botToken = prop.getProperty("botToken");
-            botUsername = prop.getProperty("botUsername");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-    /*
-    private String generateAuthLink() {
-        try {
-            String encodedBotUsername = URLEncoder.encode(botUsername, StandardCharsets.UTF_8);
-            String params = "bot_username=" + encodedBotUsername + "&auth_url=https://nigma.chat/auth";
-            String url = "https://nigma.chat/oauth/authorize?" + params;
-            return url;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+    @Autowired // инъектируем репозиторий
+    private AuthCodeRepository authCodeRepository;
     */
-
-    public String generateAuthLink(String phoneNumber) {
-        // Получаем объект пользователя по его номеру телефона из репозитория
-        Optional<UserRegistrationImpl> user = userRegistrationRepository.findByPhoneNumber(phoneNumber);
-
-        if (user.isPresent()) {
-            // Генерируем код аутентификации
-            String authCode = generateAuthCode();
-
-            // Сохраняем код аутентификации в базе данных
-            AuthCode code = new AuthCode();
-            code.setUser(user.get());
-            code.setCode(authCode);
-            authCodeRepository.save(code);
-
-            // Возвращаем ссылку для аутентификации
-            return "https://example.com/auth?phone=" + phoneNumber + "&code=" + authCode;
-        } else {
-            // Если пользователь не найден, возвращаем ошибку
-            throw new IllegalArgumentException("User not found.");
-        }
-    }
-
-    /*
-    private String generateAuthLink() {
-        try {
-            String encodedBotUsername = URLEncoder.encode(botUsername, StandardCharsets.UTF_8);
-            String params = "bot_username=" + encodedBotUsername;
-            String url = "https://telegram.org/auth/login?" + params;
-            return url;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    */
-
 
     // Метод для получения ID бота
   private String getBotId() {
@@ -224,6 +164,59 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 }
 
+/*
+
+    private void loadConfig() {
+        Properties prop = new Properties();
+        InputStream input = null;
+
+        try {
+            input = new FileInputStream("config.properties");
+            prop.load(input);
+
+            botToken = prop.getProperty("botToken");
+            botUsername = prop.getProperty("botUsername");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+ */
+ /*
+    private String generateAuthLink() {
+        try {
+            String encodedBotUsername = URLEncoder.encode(botUsername, StandardCharsets.UTF_8);
+            String params = "bot_username=" + encodedBotUsername;
+            String url = "https://telegram.org/auth/login?" + params;
+            return url;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    */
+
+/*
+    private String generateAuthLink() {
+        try {
+            String encodedBotUsername = URLEncoder.encode(botUsername, StandardCharsets.UTF_8);
+            String params = "bot_username=" + encodedBotUsername + "&auth_url=https://nigma.chat/auth";
+            String url = "https://nigma.chat/oauth/authorize?" + params;
+            return url;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    */
 
 
 /*

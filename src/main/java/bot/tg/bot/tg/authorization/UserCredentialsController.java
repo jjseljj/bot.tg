@@ -1,38 +1,35 @@
 package bot.tg.bot.tg.authorization;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 @RestController
+@RequestMapping("/user-credentials")
 public class UserCredentialsController {
-
-    private final UserCredentialsRepository userCredentialsRepository;
-
+    private UserCredentialsRepository userCredentialsRepository;
+    @Autowired
     public UserCredentialsController(UserCredentialsRepository userCredentialsRepository) {
         this.userCredentialsRepository = userCredentialsRepository;
     }
-
     // Метод для регистрации нового пользователя
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserCredentials userCredentials) {
-        if (userCredentialsRepository.findByUsername(userCredentials.getUsername()) != null) {
-            return ResponseEntity.badRequest().body("User with this username already exists.");
+    public ResponseEntity<UserCredentials> registerUser(@RequestBody UserCredentials userCredentials) {
+        if (userCredentialsRepository.findByPhoneNumber(userCredentials.getPhoneNumber()) != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        userCredentialsRepository.save(userCredentials);
-        return ResponseEntity.ok("User registered successfully.");
+        UserCredentials savedUser = userCredentialsRepository.save(userCredentials);
+        return ResponseEntity.ok(savedUser);
     }
-
     // Метод для проверки существующего пользователя
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody UserCredentials userCredentials) {
-        UserCredentials storedUserCredentials = userCredentialsRepository.findByUsername(userCredentials.getUsername());
-        if (storedUserCredentials == null || !storedUserCredentials.getPassword().equals(userCredentials.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid username or password.");
+    public ResponseEntity<UserCredentials> loginUser(@RequestParam("phoneNumber") String phoneNumber,
+                                                     @RequestParam("password") String password) {
+        UserCredentials userCredentials = userCredentialsRepository.findByPhoneNumber(phoneNumber);
+        if (userCredentials == null || !userCredentials.getPassword().equals(password)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.ok("User logged in successfully.");
+        return ResponseEntity.ok(userCredentials);
     }
-
-
 }
+

@@ -11,31 +11,33 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity(name = "user_registration")
-@Data
-@NoArgsConstructor
-@Getter
-@Setter
-public class UserRegistrationImpl{
+    @Entity(name = "user_registration")
+    @Data
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public class UserRegistrationImpl{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(name = "phone_number", unique = true)
-    private String phoneNumber;
+        @Column(name = "phone_number", unique = true)
+        private String phoneNumber;
 
-    @Column(name = "password")
-    private String password;
+        @Column(name = "password")
+        private String password;
 
-    @Column(name = "username")
-    private String username;
-
-    public UserRegistrationImpl(String phoneNumber, String password, String username) {
-        this.phoneNumber = phoneNumber;
-        this.password = password;
-        this.username = username;
-    }
-
-
+        @Column(name = "username")
+        private String username;
 }
+
+/*
+CREATE TABLE user_registration (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    phone_number VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL
+);
+
+ */

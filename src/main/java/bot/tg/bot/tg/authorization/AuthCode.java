@@ -1,23 +1,33 @@
 package bot.tg.bot.tg.authorization;
 
+//Класс AuthCode представляет модель для таблицы хранения кода аутентификации в базе данных.
+// Он содержит поля для хранения идентификатора кода аутентификации,
+// самого кода и связь с объектом UserCredentials,
+// который относится к этому коду аутентификации.
+
+//Этот класс используется, когда происходит проверка введенного пользователем
+// кода аутентификации в методе verifyAuthCode в контроллере.
+// Если введенный пользователем код аутентификации соответствует
+// последнему сохраненному коду аутентификации для указанных учетных данных
+// пользователя, то authId сохраняется в соответствующем объекте UserCredentials.
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-//Класс AuthCode представляет модель для таблицы хранения кода аутентификации в базе данных. Он содержит поля для хранения идентификатора кода аутентификации, самого кода и связь с объектом UserCredentials, который относится к этому коду аутентификации.
-
-//Этот класс используется, когда происходит проверка введенного пользователем кода аутентификации в методе verifyAuthCode в контроллере. Если введенный пользователем код аутентификации соответствует последнему сохраненному коду аутентификации для указанных учетных данных пользователя, то authId сохраняется в соответствующем объекте UserCredentials.
+import java.time.LocalDateTime;
 @Entity(name = "auth_code")
 @Data
 @NoArgsConstructor
-@Getter
-@Setter
 public class AuthCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "code")
+    private String code;
 
     @Column(name = "auth_code")
     private String authCode;
@@ -26,23 +36,24 @@ public class AuthCode {
     @JoinColumn(name = "user_credentials_id")
     private UserCredentials userCredentials;
 
-    public String getAuthCode() {
-        return authCode;
-    }
-
-    public void setAuthCode(String authCode) {
-        this.authCode = authCode;
-    }
-
-    public UserCredentials getUserCredentials() {
+        public UserCredentials getUserCredentials() {
         return userCredentials;
     }
 
     public void setUserCredentials(UserCredentials userCredentials) {
         this.userCredentials = userCredentials;
     }
-
 }
+/*
+CREATE TABLE auth_code (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    auth_code VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE auth_code ADD COLUMN user_credentials_id BIGINT;
+ALTER TABLE auth_code ADD CONSTRAINT fk_user_credentials_id FOREIGN KEY (user_credentials_id) REFERENCES user_credentials(id);
+
+ */
 
 
 /*
@@ -53,9 +64,13 @@ public class AuthCode {
 Таблица UserCredentials хранит конфиденциальную информацию, такую как пароль пользователя, и связывается с пользователем через его телефонный номер или имя пользователя.
  */
 /*
-реализации авторизации в чат-боте на Java с использованием Maven, вам нужно будет использовать какую-то форму базы данных для хранения учетных данных, также вам нужно будет создать API-интерфейс для регистрации новых пользователей и проверки существующих пользователей.
+реализации авторизации в чат-боте на Java с использованием Maven,
+нужно будет использовать какую-то форму базы данных для
+ хранения учетных данных,
+  также нужно будет создать API-интерфейс для регистрации
+  новых пользователей и проверки существующих пользователей.
 
-Вот общий шаги, которые нужно выполнить:
+общий шаги, которые нужно выполнить:
 
     Создайте таблицу в базе данных для хранения учетных данных. В таблице должны быть поля, такие как имя пользователя, пароль и телефон.
 
